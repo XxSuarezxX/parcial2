@@ -3,68 +3,58 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-public class FractalSquareTreeApp extends JPanel {
-
-    private int recursionLevel = 0;
-    private JComboBox<Integer> levelChoice;
+public class FractalSquareTreeApp extends JFrame {
+    private int iterations;
 
     public FractalSquareTreeApp() {
-        levelChoice = new JComboBox<>();
-        for (int i = 0; i <= 10; i++) {
-            levelChoice.addItem(i);
-        }
-        levelChoice.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                recursionLevel = (int) levelChoice.getSelectedItem();
-                repaint();
+        super("Árbol de Cuadrados");
+
+        // Pide al usuario el número de iteraciones
+        try {
+            String input = JOptionPane.showInputDialog("Ingrese el número de iteraciones:");
+            iterations = Integer.parseInt(input);
+
+            if (iterations <= 0) {
+                JOptionPane.showMessageDialog(null, "El número de iteraciones debe ser mayor que 0. Usando 5 iteraciones por defecto.");
+                iterations = 5;
             }
-        });
-        setLayout(new BorderLayout());
-        add(levelChoice, BorderLayout.NORTH);
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(null, "Entrada no válida. Usando 5 iteraciones por defecto.");
+            iterations = 5;
+        }
+
+        setSize(800, 800);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
     }
 
     @Override
-    protected void paintComponent(Graphics g) {
-        super.paintComponent(g);
-
-        int width = getWidth();
-        int height = getHeight();
-
-        int startX = width / 2;
-        int startY = height;
-
-        drawFractalSquareTree(g, startX, startY, 90, 50, recursionLevel);
+    public void paint(Graphics g) {
+        super.paint(g);
+        drawSquareTree(g, iterations, getWidth() / 2, getHeight(), getHeight() / 4, Math.PI / 2);
     }
 
-    private void drawFractalSquareTree(Graphics g, int x, int y, double angle, int size, int level) {
-        if (level == 0) {
+    private void drawSquareTree(Graphics g, int n, int x, int y, int size, double angle) {
+        if (n == 0) {
             return;
-        } else {
-            int endX = x + (int) (Math.cos(Math.toRadians(angle)) * size);
-            int endY = y - (int) (Math.sin(Math.toRadians(angle)) * size);
-
-            int halfSize = size / 2;
-            int topLeftX = x - halfSize;
-            int topLeftY = y - size;
-            int bottomRightX = x + halfSize;
-            int bottomRightY = y;
-
-            g.setColor(Color.BLACK);
-            g.fillRect(topLeftX, topLeftY, size, size);
-
-            drawFractalSquareTree(g, endX, endY, angle - 45, halfSize, level - 1);
-            drawFractalSquareTree(g, endX, endY, angle + 45, halfSize, level - 1);
         }
+
+        int x1 = x - (int) (Math.cos(angle) * size);
+        int y1 = y - (int) (Math.sin(angle) * size);
+
+        // Dibuja un cuadrado en lugar de una línea
+        g.drawRect(x1, y1 - size, size, size);
+
+        int newSize = (int) (size / Math.sqrt(2));
+
+        drawSquareTree(g, n - 1, x1, y1, newSize, angle - Math.PI / 4);
+        drawSquareTree(g, n - 1, x1, y1, newSize, angle + Math.PI / 4);
     }
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            JFrame frame = new JFrame("Árbol Fractal ");
-            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            frame.setSize(400, 400);
-            frame.add(new FractalSquareTreeApp());
-            frame.setVisible(true);
+            FractalSquareTreeApp app = new FractalSquareTreeApp();
+            app.setVisible(true);
         });
     }
 }
